@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 const multer = require('multer');
 const mysql = require('mysql2');
 const dotenv = require('dotenv');
+const path = require('path');
 dotenv.config();
 
 const app = express();

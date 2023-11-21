@@ -50,20 +50,17 @@ function createTables() {
     );
   `;
 
-  // SQL query to initialize data
-  const insertData = `
-    INSERT INTO users (full_name, email, password) VALUES
-    ('User1', 'a@a.com', 'password1'),
-    ('User2', 'b@b.com', 'password2'),
-    ('User3', 'c@c.com', 'password3');
-    
-    INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES
-    (1, 2, 'Hello', 'How are you?'),
-    (2, 1, 'Re: Hello', 'I am good, thank you!'),
-    (1, 3, 'Meeting', 'Let's meet tomorrow.'),
-    (3, 1, 'Re: Meeting', 'Sure, where?');
-  `;
 
+    // SQL query to initialize data for users
+    const insertEmails = `INSERT INTO emails (id, sender_id, recipient_id, subject, body) VALUES
+    (1, 1, 3, 'Hello', 'Hi @, how are you?'),
+    (2, 2, 3, 'Note', 'Remember to close the door!'),
+    (3, 3, 1, 'Re: Hello', 'I am fine thank you and you?'),
+    (4, 3, 2, 'Re: Note', 'Sure, I will close it right after i leave the house.'),
+    (5, 1, 2, 'Question', 'Have you done the WPR assignment?'),
+    (6, 2, 1, 'Re: Question', 'No, its so hard!!!.'),
+    (7, 2, 3, 'Reminder', 'Don''t forget about our SAD meeting tomorrow.'),
+    (8, 3, 1, 'Re: Reminder', 'Yeah, sure!.');`;
   // Execute queries
   db.query(createUsersTable, (err) => {
     if (err) throw err;
@@ -73,9 +70,9 @@ function createTables() {
       if (err) throw err;
       console.log('Emails table created');
 
-      db.query(insertData, (err) => {
+      db.query(insertEmails, (err) => {
         if (err) throw err;
-        console.log('Data inserted');
+        console.log('Data user inserted');
 
         // Close the database connection
         db.end((err) => {
