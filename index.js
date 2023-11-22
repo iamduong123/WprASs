@@ -93,6 +93,21 @@ app.get('/inbox', (req, res) => {
 });
 
 // Implement other routes (compose, outbox, email detail) similarly
+app.get('/compose', (req, res) => {
+
+})
+
+app.get('/outbox', (req, res) => {
+
+})
+
+app.get('/emaildetail', (req, res) => {
+
+})
+
+app.get('/signout', (req, res) => {
+
+})
 
 // Start server
 const PORT = 8000;
