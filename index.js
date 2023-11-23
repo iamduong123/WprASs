@@ -33,19 +33,28 @@ db.connect((err) => {
   console.log('Connected to the database');
 });
 
-// Sample user data (you would retrieve this from the database)
-const users = [
-  { id: 1, full_name: 'User1', email: 'a@a.com', password: 'password1' },
-  { id: 2, full_name: 'User2', email: 'b@b.com', password: 'password2' },
-  { id: 3, full_name: 'User3', email: 'c@c.com', password: 'password3' },
-];
 
 // Middleware to check if the user is authenticated
 app.use((req, res, next) => {
   const userId = req.cookies.userId;
-  req.user = users.find(u => u.id === parseInt(userId));
-  next();
+
+  // Replace the hardcoded user data with a database query
+  db.query('SELECT * FROM users WHERE id = ?', [userId], (err, results) => {
+    if (err) {
+      console.error('Error retrieving user data from the database:', err);
+      return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+    }
+
+    // Check if a user with the given ID exists
+    const user = results[0];
+    req.user = user;
+
+    // Continue with the request
+    next();
+  });
 });
+
+
 
 // Routes
 app.get('/', (req, res) => {
@@ -65,15 +74,22 @@ app.post('/signin', (req, res) => {
   console.log('Entered password:', password); 
 
   // Check credentials against the hardcoded user data array
-  const user = users.find(u => u.email === email && u.password === password);
+  db.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password], (err, results) => {
+    if (err) {
+      console.error('Error querying user data from the database:', err);
+      return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+    }
 
-  if (user) {
-    // Set user cookie
-    res.cookie('userId', user.id.toString());
-    res.redirect('/inbox');
-  } else {
-    res.render('signin', { error: 'Invalid email or password' });
-  }
+    // Check if a user with the given credentials exists
+    const user = results[0];
+    if (user) {
+      // Set user cookie
+      res.cookie('userId', user.id.toString());
+      res.redirect('/inbox');
+    } else {
+      res.render('signin', { error: 'Invalid email or password' });
+    }
+  });
 });
 
 app.get('/signup', (req, res) => {
@@ -82,6 +98,8 @@ app.get('/signup', (req, res) => {
 
 app.post('/signup', (req, res) => {
   const { full_name, email, password, reenter_password } = req.body;
+  
+  
 
   // Validation
   if (!full_name || !email || !password || !reenter_password) {
@@ -89,100 +107,133 @@ app.post('/signup', (req, res) => {
   }
 
   // Check if the email address is already used (you would check against the database)
-  const emailExists = users.some(u => u.email === email);
-  if (emailExists) {
-    return res.render('signup', { error: 'Email address is already in use' });
-  }
+  db.query('SELECT * FROM users WHERE email = ?', [email], (err, results) => {
+    if (err) {
+      console.error('Error checking email existence in the database:', err);
+      return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+    }
 
-  // Check if passwords match
-  if (password !== reenter_password) {
-    return res.render('signup', { error: 'Passwords do not match' });
-  }
+    if (results.length > 0) {
+      return res.render('signup', { error: 'Email address is already in use' });
+    }
 
-  // Implement user registration logic here (you would add the user to the database)
-  const newUser = {
-    id: users.length + 1,
-    full_name,
-    email,
-    password,
-  };
+    // Check if passwords match
+    if (password !== reenter_password) {
+      return res.render('signup', { error: 'Passwords do not match' });
+    }
 
-  // Update the database
-  const sql = 'INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)';
-  const values = [full_name, email, password];
-
-  db.query(sql, values, (err, result) => {
+  // Insert new user into the database
+  db.query('INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)', [full_name, email, password], (err, result) => {
     if (err) {
       console.error('Error inserting new user into the database:', err);
       return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
     }
 
-    // Set user cookie
-    res.cookie('userId', result.insertId.toString());
+    const newUser = {
+      id: result.insertId,
+      full_name,
+      email,
+      password,
+    };
 
-    // Render the 'welcome' view
-  res.render('welcome', { user: newUser });
+    // Set user cookie
+    res.cookie('userId', newUser.id.toString());
+
+    // Render welcome message
+    res.render('welcome', { user: newUser });
   });
 });
+});
+
 
 app.get('/inbox', (req, res) => {
   const user = req.user;
   if (user) {
-    // Retrieve user's inbox emails (you would fetch from the database)
-    const inboxEmails = []; // Replace with actual data
+    // Retrieve user's inbox emails from the database
+    db.query('SELECT * FROM emails WHERE recipient_id = ?', [user.id], (err, inboxEmails) => {
+      if (err) {
+        console.error('Error retrieving inbox emails from the database:', err);
+        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+      }
 
-    // Pagination
-    const page = parseInt(req.query.page) || 1;
-    const emailsPerPage = 5;
-    const startIndex = (page - 1) * emailsPerPage;
-    const endIndex = startIndex + emailsPerPage;
-    const totalPages = Math.ceil(inboxEmails.length / emailsPerPage);
+      // Pagination
+      const page = parseInt(req.query.page) || 1;
+      const emailsPerPage = 5;
+      const startIndex = (page - 1) * emailsPerPage;
+      const endIndex = startIndex + emailsPerPage;
+      const totalPages = Math.ceil(inboxEmails.length / emailsPerPage);
 
-    const displayedEmails = inboxEmails.slice(startIndex, endIndex);
+      const displayedEmails = inboxEmails.slice(startIndex, endIndex);
 
-    res.render('inbox', { user, inboxEmails: displayedEmails, totalPages });
+      res.render('inbox', { user, inboxEmails: displayedEmails, totalPages });
+    });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
   }
-});
+}); 
 
 app.get('/compose', (req, res) => {
-  const users = []; // Fetch users from the database
-  res.render('compose', { users });
+  // Fetch users from the database
+  db.query('SELECT * FROM users', (err, users) => {
+    if (err) {
+      console.error('Error retrieving users from the database:', err);
+      return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+    }
+
+    res.render('compose', { users });
+  });
 });
 
 app.post('/compose', (req, res) => {
   const { recipient, subject, body } = req.body;
+  const senderId = req.user.id;
 
   // Validate recipient selection
   if (!recipient) {
-    const users = []; // Fetch users from the database
-    return res.render('compose', { users, error: 'Please select a recipient.' });
+    db.query('SELECT * FROM users', (err, users) => {
+      if (err) {
+        console.error('Error retrieving users from the database:', err);
+        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+      }
+
+      return res.render('compose', { users, error: 'Please select a recipient.' });
+    });
+  } else {
+    // Insert new email into the database
+    db.query('INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)', [senderId, recipient, subject, body], (err, result) => {
+      if (err) {
+        console.error('Error inserting new email into the database:', err);
+        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+      }
+
+      // Redirect to the inbox page with a success message
+      res.redirect('/inbox?success=Email sent successfully');
+    });
   }
-
-  // Implement email sending logic (you would save the email to the database)
-  // For learning purposes, let's assume the email is successfully sent
-
-  // Redirect to the inbox page with a success message
-  res.redirect('/inbox?success=Email sent successfully');
 });
 
 app.get('/outbox', (req, res) => {
   const user = req.user;
+
   if (user) {
-    // Retrieve user's outbox emails (you would fetch from the database)
-    const outboxEmails = []; // Replace with actual data
+    // Retrieve user's outbox emails from the database
+    db.query('SELECT * FROM emails WHERE sender_id = ?', [user.id], (err, outboxEmails) => {
+      if (err) {
+        console.error('Error retrieving outbox emails from the database:', err);
+        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+      }
 
-    // Pagination
-    const page = parseInt(req.query.page) || 1;
-    const emailsPerPage = 5;
-    const startIndex = (page - 1) * emailsPerPage;
-    const endIndex = startIndex + emailsPerPage;
-    const totalPages = Math.ceil(outboxEmails.length / emailsPerPage);
+      // Pagination
+      const page = parseInt(req.query.page) || 1;
+      const emailsPerPage = 5;
+      const startIndex = (page - 1) * emailsPerPage;
+      const endIndex = startIndex + emailsPerPage;
+      const totalPages = Math.ceil(outboxEmails.length / emailsPerPage);
 
-    const displayedEmails = outboxEmails.slice(startIndex, endIndex);
+      const displayedEmails = outboxEmails.slice(startIndex, endIndex);
 
-    res.render('outbox', { user, emails: displayedEmails, totalPages });
+      res.render('outbox', { user, outboxEmails: displayedEmails, totalPages });
+    });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
   }
@@ -192,11 +243,18 @@ app.get('/emaildetail/:emailId', (req, res) => {
   const user = req.user;
 
   if (user) {
-    // Retrieve email details (you would fetch from the database based on emailId)
+    // Retrieve email details from the database
     const emailId = req.params.emailId;
-    const emailDetails = {}; // Replace with actual data
+    db.query('SELECT * FROM emails WHERE id = ?', [emailId], (err, results) => {
+      if (err) {
+        console.error('Error retrieving email details from the database:', err);
+        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+      }
 
-    res.render('emaildetail', { user, emailDetails });
+      const emailDetails = results[0];
+
+      res.render('emaildetail', { user, emailDetails });
+    });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
   }
