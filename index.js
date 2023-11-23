@@ -105,10 +105,6 @@ app.get('/emaildetail', (req, res) => {
 
 })
 
-app.get('/signout', (req, res) => {
-
-})
-
 // Start server
 const PORT = 8000;
 app.listen(PORT, () => {
