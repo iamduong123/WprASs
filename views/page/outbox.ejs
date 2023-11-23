@@ -1,14 +1,17 @@
+<!-- outbox.ejs -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <!-- Include necessary head content -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/styles/style.css">
   <title>Email System - Outbox</title>
+  <!-- ... -->
+  <title>Outbox</title>
 </head>
-
 <body>
+  <!-- Include header content (you can reuse the header from inbox.ejs) -->
   <h1>Welcome, <%= user.full_name %>!</h1>
   <nav>
     <ul>
@@ -18,18 +21,31 @@
       <li><a href="/signout">Sign Out</a></li>
     </ul>
   </nav>
-  <h2>Outbox</h2>
-  <ul>
-    <% outboxEmails.forEach(email => { %>
-      <li>
-        <a href="/email/<%= email.id %>">
-          <strong><%= email.recipient_name %></strong>
-          <span><%= email.subject || '(no subject)' %></span>
-          <span><%= email.time_sent %></span>
-        </a>
-      </li>
-    <% }); %>
-  </ul>
-</body>
+  <!-- Main Section -->
+  <section>
+    <h2>Outbox</h2>
+    <% if (emails.length === 0) { %>
+      <p>No emails in the outbox.</p>
+    <% } else { %>
+      <!-- Display outbox emails (similar to inbox) -->
+      <ul>
+        <% emails.forEach(email => { %>
+          <li>
+            <span>Recipient: <%= email.recipient_full_name %></span>
+            <span>Subject: <%= email.subject %></span>
+            <span>Time Sent: <%= email.time_sent %></span>
+            <!-- Add any additional details you want to display -->
+          </li>
+        <% }); %>
+      </ul>
 
+      <!-- Pagination Links -->
+      <!-- Add pagination links as needed -->
+    <% } %>
+  </section>
+
+  <!-- Include footer content (if any) -->
+
+  <!-- Include any necessary scripts (if any) -->
+</body>
 </html>

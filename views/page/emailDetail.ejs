@@ -1,14 +1,17 @@
+<!-- emaildetail.ejs -->
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
+  <!-- Include necessary head content -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/styles/style.css">
   <title>Email System - Email Detail</title>
+  <!-- ... -->
+  <title>Email Detail</title>
 </head>
-
 <body>
+  <!-- Include header content (you can reuse the header from inbox.ejs) -->
   <h1>Email Detail</h1>
   <nav>
     <ul>
@@ -18,7 +21,9 @@
       <li><a href="/signout">Sign Out</a></li>
     </ul>
   </nav>
-  <h2><%= email.subject || '(no subject)' %></h2>
+  <!-- Main Section -->
+  <section>
+    <h2><%= email.subject || '(no subject)' %></h2>
   <p><strong>From:</strong> <%= email.sender_name %></p>
   <p><strong>To:</strong> <%= email.recipient_name %></p>
   <p><strong>Sent:</strong> <%= email.time_sent %></p>
@@ -26,7 +31,11 @@
   <p><%= email.body %></p>
   <% if (email.attachment_path) { %>
     <p><strong>Attachment:</strong> <a href="<%= email.attachment_path %>" target="_blank">Download</a></p>
-  <% } %>
-</body>
+    <% } %>
+  </section>
 
+  <!-- Include footer content (if any) -->
+
+  <!-- Include any necessary scripts (if any) -->
+</body>
 </html>
