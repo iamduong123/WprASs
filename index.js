@@ -107,13 +107,22 @@ app.post('/signup', (req, res) => {
     password,
   };
 
-  users.push(newUser);
+  // Update the database
+  const sql = 'INSERT INTO users (full_name, email, password) VALUES (?, ?, ?)';
+  const values = [full_name, email, password];
 
-  // Set user cookie
-  res.cookie('userId', newUser.id.toString());
+  db.query(sql, values, (err, result) => {
+    if (err) {
+      console.error('Error inserting new user into the database:', err);
+      return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+    }
 
-  // Render welcome message
+    // Set user cookie
+    res.cookie('userId', result.insertId.toString());
+
+    // Render the 'welcome' view
   res.render('welcome', { user: newUser });
+  });
 });
 
 app.get('/inbox', (req, res) => {
