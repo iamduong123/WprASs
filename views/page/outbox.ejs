@@ -31,9 +31,9 @@
       <ul>
         <% outboxEmails.forEach(email => { %>
           <li>
-            <span>Recipient: <%= outboxEmails.recipient_full_name %></span>
-            <span>Subject: <%= outboxEmails.subject %></span>
-            <span>Time Sent: <%= outboxEmails.time_sent %></span>
+            <span>Recipient: <%= email.full_name %></span>
+            <span>Subject: <%= email.subject %></span>
+            <span>Time Sent: <%= email.time_sent %></span>
             <!-- Add any additional details you want to display -->
           </li>
         <% }); %>

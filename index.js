@@ -164,7 +164,6 @@ app.get('/inbox', (req, res) => {
       const totalPages = Math.ceil(inboxEmails.length / emailsPerPage);
 
       const displayedEmails = inboxEmails.slice(startIndex, endIndex);
-
       res.render('inbox', { user, inboxEmails: displayedEmails, totalPages });
     });
   } else {
@@ -217,7 +216,7 @@ app.get('/outbox', (req, res) => {
 
   if (user) {
     // Retrieve user's outbox emails from the database
-    db.query('SELECT * FROM emails WHERE sender_id = ?', [user.id], (err, outboxEmails) => {
+    db.query('SELECT * FROM emails JOIN users WHERE sender_id = ?', [user.id], (err, outboxEmails) => {
       if (err) {
         console.error('Error retrieving outbox emails from the database:', err);
         return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });

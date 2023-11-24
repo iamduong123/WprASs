@@ -32,10 +32,14 @@
         <% inboxEmails.forEach(email => { %>
           <!-- Email item with checkbox and details -->
           <li>
+
+            
             <input type="checkbox" name="selectedEmails" value="<%= email.id %>">
             <a href="/emaildetail/<%= email.id %>">
+              <p><%=email.subject %></p>
               <!-- Email details (sender's name, subject, time received) -->
             </a>
+            <p><%= email.body %></p>
           </li>
         <% }); %>
       </ul>
