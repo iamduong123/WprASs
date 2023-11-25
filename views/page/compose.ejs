@@ -11,48 +11,40 @@
     <title>Compose Email</title>
   </head>
   <body>
-    <!-- Include header content (you can reuse the header from inbox.ejs) -->
-
-    <!-- Main Section -->
-    <section>
-      <h2>Compose Email</h2>
-      <nav>
-        <ul>
-          <li><a href="/inbox">Inbox</a></li>
-          <li><a href="/compose">Compose</a></li>
-          <li><a href="/outbox">Outbox</a></li>
-          <li><a href="/signout">Sign Out</a></li>
-        </ul>
-      </nav>
-      <form action="/compose" method="post" enctype="multipart/form-data">
-        <!-- Recipient Dropdown -->
-        <label for="recipient">Recipient:</label>
-        <select id="recipient" name="recipient">
-          <% users.forEach(u => { %>
-            <option value="<%= u.id %>"><%= u.full_name %></option>
-          <% }); %>
-        </select>
-
-        <!-- Subject Field -->
-        <label for="subject">Subject:</label>
-        <input type="text" id="subject" name="subject">
-
-        <!-- Body Textarea -->
-        <label for="body">Body:</label>
-        <textarea id="body" name="body"></textarea>
-
-        <!-- File Input for Attachment -->
-        <label for="attachment">Attachment:</label>
-        <input type="file" id="attachment" name="attachment">
-
-        <!-- Send Button -->
-        <button type="submit">Send</button>
-      </form>
-    </section>
-
-    <!-- Include footer content (if any) -->
-
-    <!-- Include any necessary scripts (if any) -->
+    <h1>Compose Email</h1>
+    <nav>
+      <ul>
+        <li><a href="/inbox">Inbox</a></li>
+        <li><a href="/compose">Compose</a></li>
+        <li><a href="/outbox">Outbox</a></li>
+        <li><a href="/signout">Sign Out</a></li>
+      </ul>
+    </nav>
+    <form action="/compose" method="post" enctype="multipart/form-data">  
+      <label for="recipient">Recipient:</label>
+      <select name="recipient" id="recipient" required>
+        <% users.forEach(user => { %>
+          <option value="<%= user.id %>"><%= user.full_name %></option>
+        <% }); %>
+      </select>
+    
+      <label for="subject">Subject:</label>
+      <input type="text" name="subject" id="subject">
+    
+      <label for="body">Body:</label>
+      <textarea name="body" id="body"></textarea>
+    
+      <label for="attachment">Attachment:</label>
+      <input type="file" name="attachment" id="attachment">
+    
+      <button type="submit">Send</button>
+    </form>
+  
+    <% if (errorMessage) { %>
+      <p style="color: red;"><%= errorMessage %></p>
+    <% } else if (successMessage) { %>
+      <p style="color: green;"><%= successMessage %></p>
+    <% } %>
   </body>
   </html>
   

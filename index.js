@@ -3,14 +3,19 @@ const cookieParser = require('cookie-parser');
 const mysql = require('mysql2');
 const dotenv = require('dotenv');
 const path = require('path');
+const multer = require('multer');
+
 
 dotenv.config();
 const app = express();
+const upload = multer();
 
 // Middleware
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
+app.use(upload.none())
 
 // Set up EJS
 app.set('view engine', 'ejs');
@@ -213,9 +218,9 @@ app.get('/compose', (req, res) => {
       return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
     }
 
-    res.render('compose', { users });
+    res.render('compose', { users, errorMessage: null, successMessage: null });
   });
-});
+}); 
 
 app.post('/compose', (req, res) => {
   const { recipient, subject, body } = req.body;
@@ -223,28 +228,36 @@ app.post('/compose', (req, res) => {
 
   // Validate recipient selection
   if (!recipient) {
+    // Fetch users from the database
     db.query('SELECT * FROM users', (err, users) => {
       if (err) {
         console.error('Error retrieving users from the database:', err);
         return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
       }
 
-      return res.render('compose', { users, error: 'Please select a recipient.' });
+      return res.render('compose', {
+        users,
+        errorMessage: 'Please select a recipient.',
+        successMessage: null,
+        formData: { recipient, subject, body }, // Preserve form data for correction
+      });
     });
-  } else {
-    // Insert new email into the database
-    const query = 'INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)';
-    db.query(query, [senderId, recipient, subject, body], (err, result) => {
-      if (err) {
-        console.error('Error inserting new email into the database:', err);
-        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
-      }
-
-      // Redirect to the inbox page with a success message
-      res.redirect(`/inbox?success=${encodeURIComponent('Email sent successfully')}`);
-    });
+    return;
   }
+
+  // Insert new email into the database
+  const query = 'INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)';
+  db.query(query, [senderId, recipient, subject || '(no subject)', body || ''], (err, result) => {
+    if (err) {
+      console.error('Error inserting new email into the database:', err);
+      return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+    }
+
+    // Redirect to the inbox page with a success message
+    res.redirect(`/inbox?success=${encodeURIComponent('Email sent successfully')}`);
+  });
 });
+
 
 app.get('/outbox', (req, res) => {
   const user = req.user;
