@@ -10,6 +10,18 @@
   <!-- ... -->
   <title>Email Detail</title>
 </head>
+<% 
+  function getSenderFullName(senderId, users) {
+    const sender = users.find(user => user.id === senderId);
+    return sender ? sender.full_name : 'Unknown Sender';
+  }
+%>
+<% 
+  function getRecipientFullName(recipientId, users) {
+    const recipient = users.find(user => user.id === recipientId);
+    return recipient ? recipient.full_name : 'Unknown Sender';
+  }
+%>
 <body>
   <!-- Include header content (you can reuse the header from inbox.ejs) -->
   <h1>Email Detail</h1>
@@ -22,25 +34,24 @@
     </ul>
   </nav>
   <!-- Main Section -->
-  <section>
-    <% if (emailDetails) { %>
-      <!-- Check if emailDetails is defined -->
-      <h2><%= emailDetails.subject || '(no subject)' %></h2>
-      <p><strong>From:</strong> <%= emailDetails.sender_name %></p>
-      <p><strong>To:</strong> <%= emailDetails.recipient_name %></p>
-      <p><strong>Sent:</strong> <%= emailDetails.time_sent %></p>
-      <p><strong>Body:</strong></p>
-      <p><%= emailDetails.body %></p>
-      <% if (emailDetails.attachment_path) { %>
-        <p><strong>Attachment:</strong> <a href="<%= emailDetails.attachment_path %>" target="_blank">Download</a></p>
-      <% } %>
-    <% } else { %>
-      <p>No email details found.</p>
+  <% if (emailDetails) { %>
+    <!-- Check if emailDetails is defined -->
+    <h2><%= emailDetails.subject || '(no subject)' %></h2>
+  <p><strong>From:</strong> <%= getSenderFullName(emailDetails.sender_id, users) %></p>
+  <p><strong>To:</strong> <%= getRecipientFullName(emailDetails.recipient_id, users) %></p>
+    <p><strong>Sent:</strong> <%= emailDetails.time_sent %></p>
+    <p><strong>Body:</strong></p>
+    <p><%= emailDetails.body %></p>
+    <% if (emailDetails.attachment_path) { %>
+      <p><strong>Attachment:</strong> <a href="<%= emailDetails.attachment_path %>" target="_blank">Download</a></p>
     <% } %>
-  </section>
+  <% } else { %>
+    <p>No email details found.</p>
+  <% } %>
+</section>
 
-  <!-- Include footer content (if any) -->
+<!-- Include footer content (if any) -->
 
-  <!-- Include any necessary scripts (if any) -->
+<!-- Include any necessary scripts (if any) -->
 </body>
 </html>

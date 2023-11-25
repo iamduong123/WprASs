@@ -64,6 +64,13 @@
       <title>Email System - Outbox</title>
     
     </head>
+
+<% 
+  function getRecipientFullName(recipientId, users) {
+    const recipient = users.find(user => user.id === recipientId);
+    return recipient ? recipient.full_name : 'Unknown Sender';
+  }
+%>
     <body>
       <!-- Header section -->
       <header>
@@ -90,9 +97,11 @@
               <!-- Email item with checkbox and details -->
               <li>
                 <input type="checkbox" name="selectedEmails" value="<%= email.id %>">
-                <span>Recipient: <%= email.recipient_full_name %></span>
-                <span>Subject: <%= email.subject %></span>
-                <span>  Time Sent: <%= email.time_sent %></span>
+                <span><%= getRecipientFullName(email.recipient_id, users) %></span>
+                <span><a href="/emaildetail/<%= email.id %>">
+                  <p><%= email.subject %></p>
+                </a></span>
+                <span><%= email.time_sent %></span>
                 <!-- Add any additional details you want to display -->
               </li>
             <% }); %>
