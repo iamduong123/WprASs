@@ -1,90 +1,146 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <!-- Meta tags and title -->
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/styles/style.css">
-  <title>Email System - Inbox</title>
-</head>
-<body>
-  <!-- Header section -->
-  <header>
-    <h1>Welcome, <%= user.full_name %>!</h1>
-    <nav>
-      <!-- Navigation links -->
-      <ul>
-        <li><a href="/inbox">Inbox</a></li>
-        <li><a href="/compose">Compose</a></li>
-        <li><a href="/outbox">Outbox</a></li>
-        <li><a href="/signout">Sign Out</a></li>
-      </ul>
-    </nav>
-  </header>
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <!-- Meta tags and title -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+      }
+  
+      section {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+  
+      h2 {
+        color: #333;
+      }
+  
+      ul {
+        list-style-type: none;
+        padding: 0;
+      }
+  
+      li {
+        border-bottom: 1px solid #ccc;
+        padding: 10px 0;
+        display: flex;
+        justify-content: space-between;
+      }
+  
+      .pagination {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+  
+      .pagination a {
+        padding: 8px;
+        margin: 0 5px;
+        text-decoration: none;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+  
+      .pagination .active {
+        background-color: #4caf50;
+        color: #fff;
+      }
+    </style>
+    <title>Email System - Inbox</title>
 
-  <!-- Main section -->
-  <section>
-    <h2>Inbox</h2>
+  </head>
+  <body>
+    <!-- Header section -->
+    <header>
+      <h1>Welcome, <%= user.full_name %>!</h1>
+      <nav>
+        <!-- Navigation links -->
+        <ul>
+          <li><a href="/inbox">Inbox</a></li>
+          <li><a href="/compose">Compose</a></li>
+          <li><a href="/outbox">Outbox</a></li>
+          <li><a href="/signout">Sign Out</a></li>
+        </ul>
+      </nav>
+    </header>
 
-    <% if (inboxEmails.length > 0) { %>
-      <!-- Display emails and pagination -->
-      <ul>
-        <% inboxEmails.forEach(email => { %>
-          <!-- Email item with checkbox and details -->
-          <li>
+    <!-- Main section -->
+    <section>
+      <h2>Inbox</h2>
 
-            
-            <input type="checkbox" name="selectedEmails" value="<%= email.id %>">
-            <a href="/emaildetail/<%= email.id %>">
-              <p><%=email.subject %></p>
-              <!-- Email details (sender's name, subject, time received) -->
-            </a>
-            <p><%= email.body %></p>
-          </li>
-        <% }); %>
-      </ul>
+      <% if (inboxEmails.length > 0) { %>
+        <!-- Display emails and pagination -->
+        <ul>
+          <% inboxEmails.forEach(email => { %>
+            <!-- Email item with checkbox and details -->
+            <li>
 
-      <!-- Pagination links -->
-      <% for (let i = 1; i <= totalPages; i++) { %>
-        <a href="/inbox?page=<%= i %>"><%= i %></a>
-      <% } %>
+                
+              <input type="checkbox" name="selectedEmails" value="<%= email.id %>">
+              <a href="/emaildetail/<%= email.id %>">
+                <p><%=email.subject %></p>
+                <!-- Email details (sender's name, subject, time received) -->
+              </a>
+              <p><%= email.body %></p>
+            </li>
+          <% }); %>
+        </ul>
 
-      <!-- Delete button (Advanced Requirement) -->
-      <button id="deleteBtn">Delete Selected Emails</button>
+        <!-- Pagination links -->
+        <% for (let i = 1; i <= totalPages; i++) { %>
+          <a href="/inbox?page=<%= i %>"><%= i %></a>
+        <% } %>
 
-      <script>
-        // JavaScript for handling delete button click
-        document.getElementById('deleteBtn').addEventListener('click', async () => {
-          // Get selected email IDs
-          const selectedEmails = Array.from(document.querySelectorAll('input[name="selectedEmails"]:checked'))
-            .map(checkbox => checkbox.value);
+        <!-- Delete button (Advanced Requirement) -->
+        <button id="deleteBtn">Delete Selected Emails</button>
 
-          if (selectedEmails.length > 0) {
-            // Make a fetch request to delete emails using an API endpoint
-            const response = await fetch('/api/deleteemails', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({ emailIds: selectedEmails }),
-            });
+        <script>
+          // JavaScript for handling delete button click
+          document.getElementById('deleteBtn').addEventListener('click', async () => {
+            // Get selected email IDs
+            const selectedEmails = Array.from(document.querySelectorAll('input[name="selectedEmails"]:checked'))
+              .map(checkbox => checkbox.value);
 
-            if (response.ok) {
-              // Remove deleted emails from the current page without reloading
-              selectedEmails.forEach(emailId => {
-                const emailElement = document.querySelector(`input[value="${emailId}"]`);
-                emailElement.parentElement.remove();
+            if (selectedEmails.length > 0) {
+              // Make a fetch request to delete emails using an API endpoint
+              const response = await fetch('/api/deleteemails', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ emailIds: selectedEmails }),
               });
-            } else {
-              console.error('Failed to delete emails');
+
+              if (response.ok) {
+                // Remove deleted emails from the current page without reloading
+                selectedEmails.forEach(emailId => {
+                  const emailElement = document.querySelector(`input[value="${emailId}"]`);
+                  emailElement.parentElement.remove();
+                });
+              } else {
+                console.error('Failed to delete emails');
+              }
             }
-          }
-        });
-      </script>
-    <% } else { %>
-      <!-- Message for empty inbox -->
-      <p>No emails in the inbox.</p>
-    <% } %>
-  </section>
-</body>
-</html>
+          });
+        </script>
+      <% } else { %>
+        <!-- Message for empty inbox -->
+        <p>No emails in the inbox.</p>
+      <% } %>
+    </section>
+  </body>
+  </html>

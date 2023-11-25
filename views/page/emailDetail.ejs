@@ -23,14 +23,19 @@
   </nav>
   <!-- Main Section -->
   <section>
-    <h2><%= email.subject || '(no subject)' %></h2>
-  <p><strong>From:</strong> <%= email.sender_name %></p>
-  <p><strong>To:</strong> <%= email.recipient_name %></p>
-  <p><strong>Sent:</strong> <%= email.time_sent %></p>
-  <p><strong>Body:</strong></p>
-  <p><%= email.body %></p>
-  <% if (email.attachment_path) { %>
-    <p><strong>Attachment:</strong> <a href="<%= email.attachment_path %>" target="_blank">Download</a></p>
+    <% if (emailDetails) { %>
+      <!-- Check if emailDetails is defined -->
+      <h2><%= emailDetails.subject || '(no subject)' %></h2>
+      <p><strong>From:</strong> <%= emailDetails.sender_name %></p>
+      <p><strong>To:</strong> <%= emailDetails.recipient_name %></p>
+      <p><strong>Sent:</strong> <%= emailDetails.time_sent %></p>
+      <p><strong>Body:</strong></p>
+      <p><%= emailDetails.body %></p>
+      <% if (emailDetails.attachment_path) { %>
+        <p><strong>Attachment:</strong> <a href="<%= emailDetails.attachment_path %>" target="_blank">Download</a></p>
+      <% } %>
+    <% } else { %>
+      <p>No email details found.</p>
     <% } %>
   </section>
 

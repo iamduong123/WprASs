@@ -199,14 +199,15 @@ app.post('/compose', (req, res) => {
     });
   } else {
     // Insert new email into the database
-    db.query('INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)', [senderId, recipient, subject, body], (err, result) => {
+    const query = 'INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)';
+    db.query(query, [senderId, recipient, subject, body], (err, result) => {
       if (err) {
         console.error('Error inserting new email into the database:', err);
         return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
       }
 
       // Redirect to the inbox page with a success message
-      res.redirect('/inbox?success=Email sent successfully');
+      res.redirect(`/inbox?success=${encodeURIComponent('Email sent successfully')}`);
     });
   }
 });
