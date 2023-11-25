@@ -33,6 +33,16 @@ db.connect((err) => {
   console.log('Connected to the database');
 });
 
+let users = [];
+
+db.query('SELECT * FROM users', (err, results) => {
+  if (err) {
+    console.error('Error retrieving users from the database:', err);
+    // You might want to handle this error more gracefully in a production environment
+    return;
+  }
+  users = results;
+});
 
 // Middleware to check if the user is authenticated
 app.use((req, res, next) => {
@@ -53,8 +63,20 @@ app.use((req, res, next) => {
     next();
   });
 });
+// Fetch users from the database and update the global variable
+function updateUsers() {
+  db.query('SELECT * FROM users', (err, usersFromDB) => {
+    if (err) {
+      console.error('Error retrieving users from the database:', err);
+      return;
+    }
 
+    users = usersFromDB;
+  });
+}
 
+// Fetch users when the server starts
+updateUsers();
 
 // Routes
 app.get('/', (req, res) => {
@@ -148,6 +170,7 @@ app.post('/signup', (req, res) => {
 
 app.get('/inbox', (req, res) => {
   const user = req.user;
+
   if (user) {
     // Retrieve user's inbox emails from the database
     db.query('SELECT * FROM emails WHERE recipient_id = ?', [user.id], (err, inboxEmails) => {
@@ -156,20 +179,31 @@ app.get('/inbox', (req, res) => {
         return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
       }
 
-      // Pagination
-      const page = parseInt(req.query.page) || 1;
-      const emailsPerPage = 5;
-      const startIndex = (page - 1) * emailsPerPage;
-      const endIndex = startIndex + emailsPerPage;
-      const totalPages = Math.ceil(inboxEmails.length / emailsPerPage);
+      // Fetch users from the database
+      db.query('SELECT * FROM users', (err, users) => {
+        if (err) {
+          console.error('Error retrieving users from the database:', err);
+          return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+        }
 
-      const displayedEmails = inboxEmails.slice(startIndex, endIndex);
-      res.render('inbox', { user, inboxEmails: displayedEmails, totalPages });
+        // Pagination
+        const page = parseInt(req.query.page) || 1;
+        const emailsPerPage = 5;
+        const startIndex = (page - 1) * emailsPerPage;
+        const endIndex = startIndex + emailsPerPage;
+        const totalPages = Math.ceil(inboxEmails.length / emailsPerPage);
+
+        const displayedEmails = inboxEmails.slice(startIndex, endIndex);
+
+        // Pass 'users' array as a parameter to the 'inbox' view
+        res.render('inbox', { user, inboxEmails: displayedEmails, totalPages, users });
+      });
+      
     });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
   }
-}); 
+});
 
 app.get('/compose', (req, res) => {
   // Fetch users from the database
@@ -217,7 +251,13 @@ app.get('/outbox', (req, res) => {
 
   if (user) {
     // Retrieve user's outbox emails from the database
-    db.query('SELECT * FROM emails JOIN users WHERE sender_id = ?', [user.id], (err, outboxEmails) => {
+    const query = `
+      SELECT emails.*, users.full_name AS recipient_name
+      FROM emails
+      JOIN users ON emails.recipient_id = users.id
+      WHERE emails.sender_id = ?`;
+
+    db.query(query, [user.id], (err, outboxEmails) => {
       if (err) {
         console.error('Error retrieving outbox emails from the database:', err);
         return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
@@ -232,12 +272,13 @@ app.get('/outbox', (req, res) => {
 
       const displayedEmails = outboxEmails.slice(startIndex, endIndex);
 
-      res.render('outbox', { user, outboxEmails: displayedEmails, totalPages });
+      res.render('outbox', { user, outboxEmails: displayedEmails, totalPages, users });
     });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
   }
 });
+
 
 app.get('/emaildetail/:emailId', (req, res) => {
   const user = req.user;
@@ -253,12 +294,18 @@ app.get('/emaildetail/:emailId', (req, res) => {
 
       const emailDetails = results[0];
 
-      res.render('emaildetail', { user, emailDetails });
+      // Fetch users from the database (optional)
+      updateUsers();
+
+      // Pass 'users' array as a parameter to the 'emaildetail' view
+      res.render('emaildetail', { user, emailDetails, users });
+      console.log(users);
     });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
   }
 });
+
 
 app.get('/signout', (req, res) => {
   // Clear user cookie
@@ -266,8 +313,39 @@ app.get('/signout', (req, res) => {
   res.redirect('/');
 });
 
+app.post('/api/deleteemails', (req, res) => {
+  const { emailIds } = req.body;
+
+  // Ensure emailIds is an array and not empty
+  if (!Array.isArray(emailIds) || emailIds.length === 0) {
+    return res.status(400).json({ error: 'Invalid or empty emailIds' });
+  }
+
+  // Convert emailIds to an array of integers
+  const idsToDelete = emailIds.map(id => parseInt(id, 10));
+
+  // Add code to delete emails with the specified IDs from the database
+  const deleteQuery = 'DELETE FROM emails WHERE id IN (?)';
+  db.query(deleteQuery, [idsToDelete], (err, result) => {
+    if (err) {
+      console.error('Error deleting emails:', err);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+
+    // Check if any emails were deleted
+    if (result.affectedRows > 0) {
+      // Send a success response
+      res.sendStatus(200);
+    } else {
+      // No emails were deleted
+      return res.status(404).json({ error: 'Emails not found or already deleted' });
+    }
+  });
+});
+
 // Start server
 const PORT = 8000;
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
