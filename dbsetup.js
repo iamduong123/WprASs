@@ -36,14 +36,17 @@ function createTables() {
   `;
 
   // SQL query to create emails table
-  const createEmailsTable = `CREATE TABLE IF NOT EXISTS emails (
+  const createEmailsTable = ` CREATE TABLE IF NOT EXISTS emails (
     id INT AUTO_INCREMENT PRIMARY KEY,
     sender_id INT,
     recipient_id INT,
     subject VARCHAR(255),
     body TEXT,
     attachment_path VARCHAR(255),
-    time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP);`;
+    time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (recipient_id) REFERENCES users(id) 
+  );`;
   // SQL query to insert users data
   const insertUsers = `
   INSERT INTO users (full_name, email, password) VALUES
@@ -63,6 +66,8 @@ function createTables() {
     (1, 2, 'Re: Quick Question', 'Yes, I''ll share them with you.'),
     (3, 2, 'Status Update', 'What''s the status of the task?'),
     (2, 3, 'Re: Status Update', 'Everything is on track.');`;
+
+    
   // Execute queries
   db.query(createUsersTable, (err) => {
     if (err) throw err;
