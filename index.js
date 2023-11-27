@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const path = require('path');
 const multer = require('multer');
 
+//Configuring Multer for handling file uploads. It specifies the destination directory and file naming conventions.
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, path.join(__dirname, 'uploads')); // Store the files in the 'uploads' directory within your project
@@ -14,16 +15,23 @@ const storage = multer.diskStorage({
   }
 });
 const upload = multer({ storage: storage });
+
+// Loads environment variables from a .env file.
+// Creates an instance of the Express application.
 dotenv.config();
 const app = express();
-// path to store
 
 
 // Middleware
+
+//Parses incoming JSON and form data.
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+//Serves static files from the specified directories.
 app.use(express.static(path.join(__dirname, 'public')));
+//Parses cookies in the incoming requests.
 app.use(cookieParser());
+//Static route for serving uploaded files from the 'uploads' directory.
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Set up EJS
@@ -47,12 +55,11 @@ db.connect((err) => {
   console.log('Connected to the database');
 });
 
+//Fetches user data from the database and initializes the users array.
 let users = [];
-
 db.query('SELECT * FROM users', (err, results) => {
   if (err) {
     console.error('Error retrieving users from the database:', err);
-    // You might want to handle this error more gracefully in a production environment
     return;
   }
   users = results;
@@ -77,6 +84,7 @@ app.use((req, res, next) => {
     next();
   });
 });
+
 // Fetch users from the database and update the global variable
 function updateUsers() {
   db.query('SELECT * FROM users', (err, usersFromDB) => {
@@ -223,7 +231,9 @@ app.get('/inbox', (req, res) => {
         const displayedEmails = inboxEmails.slice(startIndex, endIndex);
 
         // Pass 'users' array as a parameter to the 'inbox' view
+
         res.render('inbox', { user, inboxEmails: displayedEmails, totalPages, users });
+
       });
     });
   } else {
@@ -348,7 +358,7 @@ app.get('/emaildetail/:emailId', (req, res) => {
 
       // Pass 'users' array as a parameter to the 'emaildetail' view
       res.render('emaildetail', { user, emailDetails, users });
-      console.log(users);
+      // console.log(users);
     });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
