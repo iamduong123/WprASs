@@ -42,7 +42,7 @@ function createTables() {
     recipient_id INT,
     subject VARCHAR(255),
     body TEXT,
-    attachment_path VARCHAR(255),
+    attachment VARCHAR(255),
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     is_deleted BOOLEAN DEFAULT 0,
     FOREIGN KEY (sender_id) REFERENCES users(id),
@@ -77,13 +77,7 @@ INSERT INTO users (full_name, email, password) VALUES
   (2, 3, 'Re: Status Update', 'Everything is on track.');
 `;
 const addIsDeletedColumnQuery = 'ALTER TABLE emails ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT 0';
-  db.query(addIsDeletedColumnQuery, (alterErr) => {
-    if (alterErr) {
-      console.error('Error adding is_deleted column:', alterErr);
-      return;
-    }
-    console.log('is_deleted column added');
-  });
+  
 
     
   // Execute queries
@@ -106,6 +100,13 @@ const addIsDeletedColumnQuery = 'ALTER TABLE emails ADD COLUMN IF NOT EXISTS is_
           db.query(insertEmails, (err) => {
             if (err) throw err;
             console.log('Data email inserted');
+            db.query(addIsDeletedColumnQuery, (alterErr) => {
+              if (alterErr) {
+                console.error('Error adding is_deleted column:', alterErr);
+                return;
+              }
+              console.log('is_deleted column added');
+            });
   
             // Close the database connection
             db.end((err) => {

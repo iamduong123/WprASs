@@ -5,17 +5,26 @@ const dotenv = require('dotenv');
 const path = require('path');
 const multer = require('multer');
 
-
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, path.join(__dirname, 'uploads')); // Store the files in the 'uploads' directory within your project
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname); // Use the original file name as the stored file name
+  }
+});
+const upload = multer({ storage: storage });
 dotenv.config();
 const app = express();
-const upload = multer();
+// path to store
+
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(cookieParser());
-app.use(upload.none())
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Set up EJS
 app.set('view engine', 'ejs');
@@ -211,20 +220,23 @@ app.get('/inbox', (req, res) => {
 });
 
 app.get('/compose', (req, res) => {
+  const user = req.user;
   // Fetch users from the database
+  
   db.query('SELECT * FROM users', (err, users) => {
     if (err) {
       console.error('Error retrieving users from the database:', err);
       return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
     }
 
-    res.render('compose', { users, errorMessage: null, successMessage: null });
+    res.render('compose', { user, errorMessage: null, successMessage: null, users  });
   });
 }); 
 
-app.post('/compose', (req, res) => {
+app.post('/compose',upload.single('attachment'), (req, res) => {
   const { recipient, subject, body } = req.body;
   const senderId = req.user.id;
+  const attachmentFile = req.file;
 
   // Validate recipient selection
   if (!recipient) {
@@ -246,8 +258,8 @@ app.post('/compose', (req, res) => {
   }
 
   // Insert new email into the database
-  const query = 'INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES (?, ?, ?, ?)';
-  db.query(query, [senderId, recipient, subject || '(no subject)', body || ''], (err, result) => {
+  const query = 'INSERT INTO emails (sender_id, recipient_id, subject, body, attachment) VALUES (?, ?, ?, ?, ?)';
+  db.query(query, [senderId, recipient, subject || '(no subject)', body || '', attachmentFile.originalname], (err, result) => {
     if (err) {
       console.error('Error inserting new email into the database:', err);
       return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
@@ -337,15 +349,15 @@ app.post('/api/deleteemails', (req, res) => {
   // Convert emailIds to an array of integers
   const idsToDelete = emailIds.map(id => parseInt(id, 10));
 
-  // Add code to delete emails with the specified IDs from the database
-  const deleteQuery = 'DELETE FROM emails WHERE id IN (?)';
-  db.query(deleteQuery, [idsToDelete], (err, result) => {
+  // Add code to soft delete emails with the specified IDs by updating the is_deleted column
+  const softDeleteQuery = 'UPDATE emails SET is_deleted = 1 WHERE id IN (?)';
+  db.query(softDeleteQuery, [idsToDelete], (err, result) => {
     if (err) {
       console.error('Error deleting emails:', err);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
 
-    // Check if any emails were deleted
+    // Check if any emails were soft-deleted
     if (result.affectedRows > 0) {
       // Send a success response
       res.sendStatus(200);

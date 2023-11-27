@@ -42,8 +42,8 @@
     <p><strong>Sent:</strong> <%= emailDetails.time_sent %></p>
     <p><strong>Body:</strong></p>
     <p><%= emailDetails.body %></p>
-    <% if (emailDetails.attachment_path) { %>
-      <p><strong>Attachment:</strong> <a href="<%= emailDetails.attachment_path %>" target="_blank">Download</a></p>
+    <% if (emailDetails.attachment) { %>
+      <p><strong>Attachment:</strong> <a href="/uploads/<%= emailDetails.attachment %>" target="_blank" download>Download</a></p>
     <% } %>
   <% } else { %>
     <p>No email details found.</p>
