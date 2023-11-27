@@ -50,9 +50,11 @@
       </ul>
   
       <!-- Pagination links -->
+    <div class="pagination">
       <% for (let i = 1; i <= totalPages; i++) { %>
-        <a href="/inbox?page=<%= i %>"><%= i %></a>
+      <a href="/inbox?page=<%= i %>"><%= i %></a>
       <% } %>
+    </div>
   
       <!-- Delete button (Advanced Requirement) -->
       <button id="deleteBtn">Delete Selected Emails</button>

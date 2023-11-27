@@ -187,7 +187,20 @@ app.get('/inbox', (req, res) => {
 
   if (user) {
     // Retrieve user's inbox emails from the database
-    db.query('SELECT * FROM emails WHERE recipient_id = ?', [user.id], (err, inboxEmails) => {
+    const inboxQuery = `
+  SELECT emails.*, users.full_name AS sender_name
+  FROM emails
+  JOIN users ON emails.sender_id = users.id
+  WHERE emails.recipient_id = ? 
+    AND emails.is_deleted = 0 
+    AND NOT EXISTS (
+      SELECT 1 FROM deleted_emails 
+      WHERE deleted_emails.email_id = emails.id 
+      AND deleted_emails.user_id = ?
+    )
+`;
+
+    db.query(inboxQuery, [user.id, user.id], (err, inboxEmails) => {
       if (err) {
         console.error('Error retrieving inbox emails from the database:', err);
         return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
@@ -212,12 +225,54 @@ app.get('/inbox', (req, res) => {
         // Pass 'users' array as a parameter to the 'inbox' view
         res.render('inbox', { user, inboxEmails: displayedEmails, totalPages, users });
       });
-      
     });
   } else {
     res.status(403).render('error', { status: 403, message: 'Access denied' });
   }
 });
+
+
+app.get('/outbox', (req, res) => {
+  const user = req.user;
+
+  if (user) {
+    // Retrieve user's outbox emails from the database
+    const outboxQuery = `
+  SELECT emails.*, users.full_name AS recipient_name
+  FROM emails
+  JOIN users ON emails.recipient_id = users.id
+  WHERE emails.sender_id = ? 
+    AND emails.is_deleted = 0 
+    AND NOT EXISTS (
+      SELECT 1 FROM deleted_emails 
+      WHERE deleted_emails.email_id = emails.id 
+      AND deleted_emails.user_id = ?
+    )
+`;
+
+    db.query(outboxQuery, [user.id, user.id], (err, outboxEmails) => {
+      if (err) {
+        console.error('Error retrieving outbox emails from the database:', err);
+        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
+      }
+
+      // Pagination
+      const page = parseInt(req.query.page) || 1;
+      const emailsPerPage = 5;
+      const startIndex = (page - 1) * emailsPerPage;
+      const endIndex = startIndex + emailsPerPage;
+      const totalPages = Math.ceil(outboxEmails.length / emailsPerPage);
+
+      const displayedEmails = outboxEmails.slice(startIndex, endIndex);
+
+      res.render('outbox', { user, outboxEmails: displayedEmails, totalPages, users });
+    });
+  } else {
+    res.status(403).render('error', { status: 403, message: 'Access denied' });
+  }
+});
+
+
 
 app.get('/compose', (req, res) => {
   const user = req.user;
@@ -271,38 +326,7 @@ app.post('/compose',upload.single('attachment'), (req, res) => {
 });
 
 
-app.get('/outbox', (req, res) => {
-  const user = req.user;
 
-  if (user) {
-    // Retrieve user's outbox emails from the database
-    const query = `
-      SELECT emails.*, users.full_name AS recipient_name
-      FROM emails
-      JOIN users ON emails.recipient_id = users.id
-      WHERE emails.sender_id = ?`;
-
-    db.query(query, [user.id], (err, outboxEmails) => {
-      if (err) {
-        console.error('Error retrieving outbox emails from the database:', err);
-        return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });
-      }
-
-      // Pagination
-      const page = parseInt(req.query.page) || 1;
-      const emailsPerPage = 5;
-      const startIndex = (page - 1) * emailsPerPage;
-      const endIndex = startIndex + emailsPerPage;
-      const totalPages = Math.ceil(outboxEmails.length / emailsPerPage);
-
-      const displayedEmails = outboxEmails.slice(startIndex, endIndex);
-
-      res.render('outbox', { user, outboxEmails: displayedEmails, totalPages, users });
-    });
-  } else {
-    res.status(403).render('error', { status: 403, message: 'Access denied' });
-  }
-});
 
 
 app.get('/emaildetail/:emailId', (req, res) => {
@@ -340,6 +364,7 @@ app.get('/signout', (req, res) => {
 
 app.post('/api/deleteemails', (req, res) => {
   const { emailIds } = req.body;
+  const userId = req.user.id;
 
   // Ensure emailIds is an array and not empty
   if (!Array.isArray(emailIds) || emailIds.length === 0) {
@@ -349,24 +374,43 @@ app.post('/api/deleteemails', (req, res) => {
   // Convert emailIds to an array of integers
   const idsToDelete = emailIds.map(id => parseInt(id, 10));
 
-  // Add code to soft delete emails with the specified IDs by updating the is_deleted column
-  const softDeleteQuery = 'UPDATE emails SET is_deleted = 1 WHERE id IN (?)';
-  db.query(softDeleteQuery, [idsToDelete], (err, result) => {
-    if (err) {
-      console.error('Error deleting emails:', err);
+  // Check if emails are already deleted
+  const checkDeletedQuery = 'SELECT email_id FROM deleted_emails WHERE user_id = ? AND email_id IN (?)';
+  db.query(checkDeletedQuery, [userId, idsToDelete], (checkErr, existingDeletedEmails) => {
+    if (checkErr) {
+      console.error('Error checking deleted emails:', checkErr);
       return res.status(500).json({ error: 'Internal Server Error' });
     }
 
-    // Check if any emails were soft-deleted
-    if (result.affectedRows > 0) {
-      // Send a success response
-      res.sendStatus(200);
-    } else {
-      // No emails were deleted
+    const existingDeletedIds = existingDeletedEmails.map(row => row.email_id);
+
+    // Filter out already deleted emails
+    const uniqueIdsToDelete = idsToDelete.filter(id => !existingDeletedIds.includes(id));
+
+    if (uniqueIdsToDelete.length === 0) {
+      // All selected emails are already deleted
       return res.status(404).json({ error: 'Emails not found or already deleted' });
     }
+
+    // Insert records into the deleted_emails table
+    const insertDeletedEmailsQuery = 'INSERT INTO deleted_emails (email_id, user_id) VALUES ?';
+    const values = uniqueIdsToDelete.map(emailId => [emailId, userId]);
+
+    db.query(insertDeletedEmailsQuery, [values], (err) => {
+      if (err) {
+        console.error('Error inserting into deleted_emails table:', err);
+        return res.status(500).json({ error: 'Internal Server Error' });
+      }
+
+      // Send a success response
+      res.sendStatus(200);
+    });
   });
 });
+
+
+
+
 
 // Start server
 const PORT = 8000;

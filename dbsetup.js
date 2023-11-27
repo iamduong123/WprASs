@@ -52,6 +52,7 @@ function createTables() {
     id INT AUTO_INCREMENT PRIMARY KEY,
     email_id INT,
     user_id INT,
+    deleted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (email_id) REFERENCES emails(id),
     FOREIGN KEY (user_id) REFERENCES users(id)
   );`;
@@ -76,7 +77,7 @@ INSERT INTO users (full_name, email, password) VALUES
   (3, 2, 'Status Update', 'What''s the status of the task?'),
   (2, 3, 'Re: Status Update', 'Everything is on track.');
 `;
-const addIsDeletedColumnQuery = 'ALTER TABLE emails ADD COLUMN IF NOT EXISTS is_deleted BOOLEAN DEFAULT 0';
+
   
 
     
@@ -100,14 +101,6 @@ const addIsDeletedColumnQuery = 'ALTER TABLE emails ADD COLUMN IF NOT EXISTS is_
           db.query(insertEmails, (err) => {
             if (err) throw err;
             console.log('Data email inserted');
-            db.query(addIsDeletedColumnQuery, (alterErr) => {
-              if (alterErr) {
-                console.error('Error adding is_deleted column:', alterErr);
-                return;
-              }
-              console.log('is_deleted column added');
-            });
-  
             // Close the database connection
             db.end((err) => {
               if (err) throw err;

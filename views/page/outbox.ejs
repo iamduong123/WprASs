@@ -37,19 +37,19 @@
 
     <% if (outboxEmails.length > 0) { %>
     <!-- Display emails and pagination -->
-    <ul>
-      <% outboxEmails.forEach(email => { %>
-      <!-- Email item with checkbox and details -->
-      <li class="email-item">
-        <input type="checkbox" name="selectedEmails" value="<%= email.id %>">
-        <div class="email-details">
-          <span><%= getRecipientFullName(email.recipient_id, users) %></span>
-          <span class="subject"><a href="/emaildetail/<%= email.id %>"><%= email.subject %></a></span>
-          <span class="time"><%= email.time_sent %></span>
-        </div>
-      </li>
-      <% }); %>
-    </ul>
+        <% outboxEmails.forEach(email => { %>
+          <!-- Email item with checkbox and details -->
+          <li class="email-item">
+            <input type="checkbox" id="email_<%= email.id %>" name="selectedEmails" value="<%= email.id %>">
+              <!-- Email details (sender's name, subject, time received) -->
+            <span><%= getRecipientFullName(email.recipient_id, users) %></span>
+            <span></span><a href="/emaildetail/<%= email.id %>">
+              <p><%= email.subject %></p>
+            </a></span>
+              <span><%= email.time_sent %></span>
+          </li>
+        <% }); %>
+      </ul>
 
     <!-- Pagination links -->
     <div class="pagination">
