@@ -1,18 +1,19 @@
-  <!-- compose.ejs -->
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <!-- Include necessary head content -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/styles/style.css">
-    <title>Email System - Compose</title>
-    <!-- ... -->
-    <title>Compose Email</title>
-  </head>
-  <body>
-    <h1>Compose Email</h1>
+<!-- compose.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Include necessary head content -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles/style.css">
+  <title>Email System - Compose</title>
+</head>
+<body>
+  <!-- Header section -->
+  <header>
+    <h1>Welcome, <%= user.full_name %>!</h1>
     <nav>
+      <!-- Navigation links -->
       <ul>
         <li><a href="/inbox">Inbox</a></li>
         <li><a href="/compose">Compose</a></li>
@@ -20,31 +21,35 @@
         <li><a href="/signout">Sign Out</a></li>
       </ul>
     </nav>
-    <form action="/compose" method="post" enctype="multipart/form-data">  
+  </header>
+
+  <!-- Main section -->
+  <section>
+    <form action="/compose" method="post" enctype="multipart/form-data" class="container">
       <label for="recipient">Recipient:</label>
       <select name="recipient" id="recipient" required>
         <% users.forEach(user => { %>
           <option value="<%= user.id %>"><%= user.full_name %></option>
         <% }); %>
       </select>
-    
+
       <label for="subject">Subject:</label>
       <input type="text" name="subject" id="subject">
-    
+
       <label for="body">Body:</label>
       <textarea name="body" id="body"></textarea>
-    
+
       <label for="attachment">Attachment:</label>
       <input type="file" name="attachment" id="attachment">
-    
+
       <button type="submit">Send</button>
     </form>
-  
+
     <% if (errorMessage) { %>
-      <p style="color: red;"><%= errorMessage %></p>
+      <p class="error"><%= errorMessage %></p>
     <% } else if (successMessage) { %>
-      <p style="color: green;"><%= successMessage %></p>
+      <p class="success"><%= successMessage %></p>
     <% } %>
-  </body>
-  </html>
-  
+  </section>
+</body>
+</html>
