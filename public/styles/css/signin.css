@@ -1,0 +1,84 @@
+body {
+    background-image: url(../image/background.jpg);
+    background-position: center 0;
+    background-size: 100%;
+    background-repeat: no-repeat;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+.container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    font-size: 20px;
+    font-family: sans-serif;
+    width: 30%;
+    height: 450px;
+    background-color:#E9967A;
+    padding: 10px;
+}
+
+h1 {
+    text-align: center;
+}
+form {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    margin: 0 auto;
+    padding: 10px;
+    position: relative;
+    line-height: 2;
+}
+button {
+    background-color: white;
+    margin-top: 30px;
+    /* margin-left: 110px; */
+    border: none;
+    color: #7E3517;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #7E3517;
+    color: white;
+    cursor: pointer;
+}
+.form-control{
+    width: 300px;
+    height: 30px;
+    font-size: 100%;
+    border-radius: 15px;
+    margin: 8px 0;
+    padding-left:10px;
+
+}
+.signup {
+    text-align: right;
+}
+a:link {
+    color: rgb(18, 59, 56);
+    text-decoration: none;
+}
+a:visited {
+    color: #AA6C39 ;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+input{
+    writing-mode: horizontal-tb !important;
+    padding-block: 5px;
+    padding-inline: 5px;
+}
+p{
+    text-align: center;
+}

@@ -335,10 +335,6 @@ app.post('/compose',upload.single('attachment'), (req, res) => {
   });
 });
 
-
-
-
-
 app.get('/emaildetail/:emailId', (req, res) => {
   const user = req.user;
 
@@ -417,10 +413,6 @@ app.post('/api/deleteemails', (req, res) => {
     });
   });
 });
-
-
-
-
 
 // Start server
 const PORT = 8000;

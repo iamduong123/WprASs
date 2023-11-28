@@ -5,7 +5,7 @@
   <!-- Meta tags and title -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/styles/style.css">
+  <link rel="stylesheet" href="/styles/css/inbox.css">
   <title>Email System - Outbox</title>
 </head>
 
@@ -19,37 +19,49 @@
 <body>
   <!-- Header section -->
   <header>
-    <h1>Greetings, <%= user.full_name %>!!</h1>
+    
     <nav>
+      <div class="title-container">
+        <h1>Greetings, <%= user.full_name %>!!</h1>
+      </div>
       <!-- Navigation links -->
       <ul>
         <li><a href="/inbox">Inbox</a></li>
         <li><a href="/compose">Compose</a></li>
-        <li><a href="/outbox">Outbox</a></li>
         <li><a href="/signout">Sign Out</a></li>
       </ul>
     </nav>
   </header>
-
+  
   <!-- Main section -->
   <section class="email-section">
-    <h2>Outbox</h2>
+    <div class="title-container">
+      <h2>Outbox</h2>
+    </div>
 
     <% if (outboxEmails.length > 0) { %>
     <!-- Display emails and pagination -->
+    <table>
+      <thead>
+        <tr>
+          <th>Select</th>
+          <th>Recipient</th>
+          <th>Subject</th>
+          <th>Time Sent</th>
+        </tr>
+      </thead>
+      <tbody>
         <% outboxEmails.forEach(email => { %>
-          <!-- Email item with checkbox and details -->
-          <li class="email-item">
-            <input type="checkbox" id="email_<%= email.id %>" name="selectedEmails" value="<%= email.id %>">
-              <!-- Email details (sender's name, subject, time received) -->
-            <span><%= getRecipientFullName(email.recipient_id, users) %></span>
-            <span></span><a href="/emaildetail/<%= email.id %>">
-              <p><%= email.subject %></p>
-            </a></span>
-              <span><%= email.time_sent %></span>
-          </li>
+        <!-- Email item with checkbox and details -->
+        <tr class="email-item">
+          <td><input type="checkbox" id="email_<%= email.id %>" name="selectedEmails" value="<%= email.id %>"></td>
+          <td><%= getRecipientFullName(email.recipient_id, users) %></td>
+          <td><a href="/emaildetail/<%= email.id %>"><%= email.subject %></a></td>
+          <td><%= email.time_sent %></td>
+        </tr>
         <% }); %>
-      </ul>
+      </tbody>
+    </table>
 
     <!-- Pagination links -->
     <div class="pagination">
@@ -59,7 +71,9 @@
     </div>
 
     <!-- Delete button (Advanced Requirement) -->
-    <button id="deleteBtn">Delete Selected Emails</button>
+    <div class="delete-button-container">
+      <button id="deleteBtn">Delete Selected Emails</button>
+    </div>
 
     <script>
       // JavaScript for handling delete button click
@@ -85,7 +99,7 @@
               selectedEmails.forEach(emailId => {
                 const emailElement = document.querySelector(`input[value="${emailId}"]`);
                 // Assuming the emailElement is the checkbox itself, remove the parent element
-                emailElement.parentElement.remove();
+                emailElement.parentElement.parentElement.remove();
               });
             } else {
               console.error('Failed to delete emails');

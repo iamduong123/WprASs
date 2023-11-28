@@ -1,0 +1,150 @@
+body {
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  padding-top: 30px;
+  background-image: url(../image/background.jpg);
+  background-position: center 0;
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
+.email-section {
+  margin-left: 200px; 
+}
+
+.container {
+  width: 1000px; 
+}
+
+.title-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px; /* Adjust this margin based on your design */
+}
+
+h1 {
+  text-align: center;
+}
+
+h2 {
+  text-align: center;
+}
+
+nav {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 200px;
+  background-color: transparent;
+  backdrop-filter: blur(200px);
+  justify-content: space-between;
+  background: url('../img/avt.png') no-repeat;
+  background-size: 40%;
+  background-position: top;
+  background-position-x: center;
+}
+
+nav a {
+  display: block;
+  color: rgb(255, 255, 255);
+  text-align: left;
+  padding: 14px 16px;
+  text-decoration: none;
+  border-radius: 5px;
+}
+
+nav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+
+.delete-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px; /* Adjust this margin based on your design */
+}
+
+#deleteBtn {
+  background-color: white;
+  border: none;
+  color: #7E3517;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+#deleteBtn:hover {
+  background-color: #7E3517;
+  color: white;
+  cursor: pointer;
+}
+
+table {
+  border-style: solid;
+  border-color: #7E3517;
+  table-layout: fixed;
+  width: 900px;
+  border-collapse: collapse;
+  margin-left: 220px; /* Adjust this value based on your design */
+}
+
+th,
+td {
+  border: 1px solid #dddddd;
+  padding: 8px;
+  text-align: left;
+  border-radius: 5px;
+  text-decoration: none;
+  max-width: 100px;
+  white-space: nowrap;
+  overflow: hidden; 
+  text-overflow: ellipsis;
+}
+
+.checkbox {
+  text-align: center;
+  vertical-align: middle;
+}
+
+a:link {
+    color: rgb(18, 59, 56);
+    text-decoration: none;
+}
+a:visited {
+    color: #AA6C39 ;
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+.pagination {
+  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pagination a {
+  padding: 8px;
+  margin: 0 5px;
+  text-decoration: none;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.pagination a:hover {
+  background-color: #ddd;
+}
+
+.pagination .active {
+  background-color: #AA6C39;
+  color: #fff;
+}

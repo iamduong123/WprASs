@@ -5,18 +5,17 @@
   <!-- Include necessary head content -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/styles/style.css">
+  <link rel="stylesheet" href="/styles/css/compose.css">
   <title>Email System - Compose</title>
 </head>
 <body>
   <!-- Header section -->
   <header>
-    <h1>Greetings, <%= user.full_name %>!!</h1>
+    
     <nav>
-      <!-- Navigation links -->
+      <div><h1>Greetings, <%= user.full_name %>!!</h1></div>
       <ul>
         <li><a href="/inbox">Inbox</a></li>
-        <li><a href="/compose">Compose</a></li>
         <li><a href="/outbox">Outbox</a></li>
         <li><a href="/signout">Sign Out</a></li>
       </ul>
