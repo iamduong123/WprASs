@@ -24,8 +24,9 @@
 %>
 <body>
   <!-- Include header content (you can reuse the header from inbox.ejs) -->
-  <h1>Welcome, <%= user.full_name %>!</h1>
+  
   <nav>
+    <h1>Greetings, <%= user.full_name %>!!</h1>
     <ul>
       <li><a href="/inbox">Inbox</a></li>
       <li><a href="/compose">Compose</a></li>
@@ -33,22 +34,23 @@
       <li><a href="/signout">Sign Out</a></li>
     </ul>
   </nav>
+  <section>
   <!-- Main Section -->
   <% if (emailDetails) { %>
     <!-- Check if emailDetails is defined -->
     <h2><%= emailDetails.subject || '(no subject)' %></h2>
-  <p><strong>From:</strong> <%= getSenderFullName(emailDetails.sender_id, users) %></p>
-  <p><strong>To:</strong> <%= getRecipientFullName(emailDetails.recipient_id, users) %></p>
+    <p><strong>From:</strong> <%= getSenderFullName(emailDetails.sender_id, users) %></p>
+    <p><strong>To:</strong> <%= getRecipientFullName(emailDetails.recipient_id, users) %></p>
     <p><strong>Sent:</strong> <%= emailDetails.time_sent %></p>
     <p><strong>Body:</strong></p>
     <p><%= emailDetails.body %></p>
     <% if (emailDetails.attachment) { %>
       <p><strong>Attachment:</strong> <a href="/uploads/<%= emailDetails.attachment %>" target="_blank" download>Download</a></p>
     <% } %>
-  <% } else { %>
+    <% } else { %>
     <p>No email details found.</p>
-  <% } %>
-</section>
+    <% } %>
+  </section>
 
 <!-- Include footer content (if any) -->
 

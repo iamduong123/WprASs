@@ -18,9 +18,12 @@ h1, h2 {
 
 nav ul {
   list-style-type: none;
-  padding: 0;
+  width: 150px;
+  float: left;
+  display: inline;
   margin: 0;
-  display: block; /* Updated to display block */
+  padding: 0;
+  margin-right: 10px;
 }
 
 nav ul li {
@@ -75,6 +78,11 @@ section {
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 500;
+  float: left;
+  margin: 0;
+  padding: 0;
+  display: inline;
 }
 
 ul {

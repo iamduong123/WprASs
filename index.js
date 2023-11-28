@@ -199,8 +199,7 @@ app.get('/inbox', (req, res) => {
   SELECT emails.*, users.full_name AS sender_name
   FROM emails
   JOIN users ON emails.sender_id = users.id
-  WHERE emails.recipient_id = ? 
-    AND emails.is_deleted = 0 
+  WHERE emails.recipient_id = ?
     AND NOT EXISTS (
       SELECT 1 FROM deleted_emails 
       WHERE deleted_emails.email_id = emails.id 
@@ -252,7 +251,6 @@ app.get('/outbox', (req, res) => {
   FROM emails
   JOIN users ON emails.recipient_id = users.id
   WHERE emails.sender_id = ? 
-    AND emails.is_deleted = 0 
     AND NOT EXISTS (
       SELECT 1 FROM deleted_emails 
       WHERE deleted_emails.email_id = emails.id 
@@ -324,7 +322,9 @@ app.post('/compose',upload.single('attachment'), (req, res) => {
 
   // Insert new email into the database
   const query = 'INSERT INTO emails (sender_id, recipient_id, subject, body, attachment) VALUES (?, ?, ?, ?, ?)';
-  db.query(query, [senderId, recipient, subject || '(no subject)', body || '', attachmentFile.originalname], (err, result) => {
+  // Check if an attachment is provided before accessing its properties
+  const attachmentFileName = attachmentFile ? attachmentFile.originalname : null;
+  db.query(query, [senderId, recipient, subject || '(no subject)', body || '', attachmentFileName ], (err, result) => {
     if (err) {
       console.error('Error inserting new email into the database:', err);
       return res.status(500).render('error', { status: 500, message: 'Internal Server Error' });

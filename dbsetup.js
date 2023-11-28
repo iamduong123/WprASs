@@ -44,7 +44,6 @@ function createTables() {
     body TEXT,
     attachment VARCHAR(255),
     time_sent TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    is_deleted BOOLEAN DEFAULT 0,
     FOREIGN KEY (sender_id) REFERENCES users(id),
     FOREIGN KEY (recipient_id) REFERENCES users(id) 
   );`;
@@ -60,22 +59,29 @@ function createTables() {
   // SQL query to insert users data
   const insertUsers = `
 INSERT INTO users (full_name, email, password) VALUES
-  ('User1', 'a@a.com', 'password1'),
-  ('User2', 'b@b.com', 'password2'),
-  ('User3', 'c@c.com', 'password3');
+  ('Nguyen Van A', 'a@a.com', 'NVA123'),
+  ('Hoang Thai Duong', 'HTD@gmail.com', 'HTD123'),
+  ('Nicolas Viau', 'NV@edu.vn.com', 'NIC123'),
+  ('Truong Ha Huynh Thai', 'THHT@gmail.com', 'THHTdeptrai');
 `;
 
 
     // SQL query to initialize data for users
     const insertEmails = `INSERT INTO emails (sender_id, recipient_id, subject, body) VALUES
-  (1, 2, 'Hello', 'Hi User2, how are you?'),
-  (2, 1, 'Meeting', 'Are you available for a meeting tomorrow?'),
-  (3, 1, 'Regarding Project', 'Let''s discuss the project details.'),
-  (1, 3, 'Re: Regarding Project', 'Sure, let''s schedule a meeting.'),
+  (3, 2, 'Hello', 'Hi Hoang Thai Duong, how are you?'),
+  (2, 3, 'Game Dev Meeting', 'Are you available for a meeting tomorrow?'),
+  (3, 2, 'Regarding Project', 'Let''s discuss the project details.'),
+  (2, 3, 'Game Project', 'Sure, let''s schedule a meeting.'),
+  (4, 2, 'WorkFlow', 'May lam ve workflow de ca team cung theo nhe!'),
+  (4, 3, 'Project Update', 'I hope this email finds you well. I wanted to provide a quick update on the current status of our project. We have made significant progress in the last week, and I would like to discuss the next steps in our upcoming meeting.
+Please review the attached document for a detailed report.
+Best regards, THHT'),
+  (2, 4, 'Rep: Workflow', 'OK, de t lam nhe !'),
+  (3, 4, 'Rep: Project Update', 'Alright, i will look forward into it. For now, want to have a quick lunch with me and Hoang Thai Duong??'),
   (2, 1, 'Quick Question', 'Do you have the latest updates?'),
-  (1, 2, 'Re: Quick Question', 'Yes, I''ll share them with you.'),
-  (3, 2, 'Status Update', 'What''s the status of the task?'),
-  (2, 3, 'Re: Status Update', 'Everything is on track.');
+  (1, 2, 'Trung Giai Thuong!!!', 'Chuc Mung ban la nguoi thu 100 may man nhan duoc 1 chiec xe HONDA CIVIC'),
+  (1, 3, 'Thu Moi Tuyen Dung', 'Chuc Mung ban da qua vong gui xe'),
+  (3, 1, 'Canh Bao Bao Mat', 'May Tinh Cua Ban da bi hong. Can phai giai quyet SOS');
 `;
 
   
@@ -85,7 +91,6 @@ INSERT INTO users (full_name, email, password) VALUES
   db.query(createUsersTable, (err) => {
     if (err) throw err;
     console.log('Users table created');
-  
     db.query(createEmailsTable, (err) => {
       if (err) throw err;
       console.log('Emails table created');
